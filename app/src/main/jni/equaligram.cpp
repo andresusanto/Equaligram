@@ -41,15 +41,14 @@ typedef struct{
 } ARGB;
 
 uint32_t convertArgbToInt(ARGB argb) {
-	return (argb.red << 24) | (argb.green << 16) | (argb.blue << 8);
-	//return (argb.alpha) | (argb.red << 24) | (argb.green << 16) | (argb.blue << 8);
+	return (argb.alpha << 24) | (argb.red) | (argb.green << 8) | (argb.blue << 16);
 }
 
 void convertIntToArgb(uint32_t pixel, ARGB* argb){
-	argb->red = ((pixel >> 24) & 0xff);
-	argb->green = ((pixel >> 16) & 0xff);
-	argb->blue = ((pixel >> 8) & 0xff);
-	//argb->alpha = (pixel & 0xff);
+	argb->red = ((pixel) & 0xff);
+	argb->green = ((pixel >> 8) & 0xff);
+	argb->blue = ((pixel >> 16) & 0xff);
+	argb->alpha = ((pixel >> 24) & 0xff);
 }
 
 
@@ -154,10 +153,10 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_genHistogram 
 	uint32_t nBitmapSize = nBitmap->bitmapInfo.height * nBitmap->bitmapInfo.width;
 
 	ARGB aBlack;
-	aBlack.red = 255;
-	aBlack.green = 0;
-	aBlack.blue = 255;
-	aBlack.alpha = 0;
+	aBlack.red = 0;
+	aBlack.green = 255;
+	aBlack.blue = 0;
+	aBlack.alpha = 255;
 
 	uint32_t iBlack = convertArgbToInt(aBlack);
 

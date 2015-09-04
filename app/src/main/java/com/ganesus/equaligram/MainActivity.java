@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         buffBitmap = loadBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.lena));
 
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
-        Bitmap canvas = Bitmap.createBitmap(500, 500, conf);
+        Bitmap canvas = Bitmap.createBitmap(780, 500, conf);
 
         Bitmap tes = genHistogram(buffBitmap, canvas);
 

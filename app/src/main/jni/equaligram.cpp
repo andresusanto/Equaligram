@@ -152,14 +152,6 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_genHistogram 
 
 	uint32_t nBitmapSize = nBitmap->bitmapInfo.height * nBitmap->bitmapInfo.width;
 
-	ARGB aBlack;
-	aBlack.red = 0;
-	aBlack.green = 255;
-	aBlack.blue = 0;
-	aBlack.alpha = 255;
-
-	uint32_t iBlack = convertArgbToInt(aBlack);
-
 	for (uint32_t i = 0; i < nBitmapSize; i++){
 		ARGB bitmapColor;
 		convertIntToArgb(nBitmap->pixels[i], &bitmapColor);
@@ -169,17 +161,42 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_genHistogram 
 		hBlue[bitmapColor.blue]++;
 	}
 
-	for (uint16_t i = 0; i < 256; i++){
-		int max = hBlue[i];
-		if (max > 500) max = 500;
-		if (max == 0) max = 0;
+	float scalingBlue = 0.0f, scalingGreen = 0.0f, scalingRed = 0.0f;
+	uint32_t blue_max = hBlue[1], green_max = hGreen[1], red_max = hRed[1];
 
-		//LOGD("%d   =   %d", i, max);
 
-		for (int j = 0; j < max; j++){
-			nCanvas->pixels[i + j * 500] = iBlack;
+	for (uint16_t i = 1; i < 256; i++){
+		if (hBlue[i] > blue_max) blue_max = hBlue[i];
+		if (hGreen[i] > green_max) green_max = hGreen[i];
+        if (hRed[i] > red_max) red_max = hRed[i];
+	}
+
+	scalingBlue = 255.0f / blue_max; scalingGreen = 255.0f / green_max; scalingRed = 255.0f / red_max;
+	
+	ARGB aRed, aGreen, aBlue;
+	aRed.red = 255; aRed.green = 0; aRed.blue = 0; aRed.alpha = 255;
+	aGreen.red = 0; aGreen.green = 255; aGreen.blue = 0; aGreen.alpha = 255;
+	aBlue.red = 0; aBlue.green = 0; aBlue.blue = 255; aBlue.alpha = 255;
+
+	uint32_t iRed= convertArgbToInt(aRed);
+	uint32_t iGreen= convertArgbToInt(aGreen);
+	uint32_t iBlue= convertArgbToInt(aBlue);
+
+	for (uint16_t i = 1; i < 256; i++){
+		int barSize = (int) (hRed[i] * scalingRed);
+		for (int j = 0; j < barSize; j++){
+			nCanvas->pixels[i + (300 - j) * nCanvas->bitmapInfo.width] = iRed;
 		}
 
+		barSize = (int) (hGreen[i] * scalingGreen);
+		for (int j = 0; j < barSize; j++){
+			nCanvas->pixels[260 + i + (300 - j) * nCanvas->bitmapInfo.width] = iGreen;
+		}
+
+		barSize = (int) (hBlue[i] * scalingBlue);
+		for (int j = 0; j < barSize; j++){
+			nCanvas->pixels[520 + i + (300 - j) * nCanvas->bitmapInfo.width] = iBlue;
+		}
 	}
 
 	LOGE("Sudah!");

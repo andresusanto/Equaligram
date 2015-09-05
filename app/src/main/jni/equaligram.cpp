@@ -23,6 +23,8 @@ extern "C"
 	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_createGrayscaleBmp (JNIEnv * env, jobject obj, jobject bitmem);
 	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo1 (JNIEnv * env, jobject obj, jobject bitmem);
 	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo1Bmp (JNIEnv * env, jobject obj, jobject bitmem);
+	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLinear (JNIEnv * env, jobject obj, jobject bitmem,int new_min,int new_max);
+	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLinearBmp (JNIEnv * env, jobject obj, jobject bitmem,int new_min,int new_max);
 }
 
 
@@ -118,6 +120,10 @@ NativeBitmap* convertBitmapToNative(JNIEnv * env, jobject bitmap){
 	nBitmap->bitmapInfo = bitmapInfo;
 	nBitmap->pixels = storedBitmapPixels;
 	return nBitmap;
+}
+
+int adjustIntensity(int i,int old_min,int old_max,int new_min,int new_max){
+	return (i - old_min)*(new_max - new_min)/(old_max - old_min) + new_min;
 }
 
 jobject convertNativeToBitmap(JNIEnv * env, NativeBitmap* nBitmap){
@@ -390,3 +396,41 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo1Bmp
 
 	return convertNativeToBitmap(env, transformNativeBitmap(nBitmap, color_transform));
 }
+
+JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLinear (JNIEnv * env, jobject obj, jobject bitmem,int new_min,int new_max){
+	NativeBitmap* nBitmap = (NativeBitmap*) env->GetDirectBufferAddress(bitmem);
+
+	uint32_t* color_transform = new uint32_t[256];
+	uint32_t* histogram = createHistogram(nBitmap);
+	int old_min = get_lower_bound(histogram);
+	int old_max = get_upper_bound(histogram);
+
+	for(int i = 0; i < 256; i++){
+		color_transform[i] = NOT_SPECIFIED_COLOR;
+		if (old_min <= i && i <= old_max){
+			color_transform[i] = adjustIntensity(i,old_min,old_max,new_min,new_max);
+		}
+	}
+	return env->NewDirectByteBuffer(transformNativeBitmap(nBitmap,color_transform),0);
+}
+
+JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLinearBmp (JNIEnv * env, jobject obj, jobject bitmem,int new_min,int new_max){
+	NativeBitmap* nBitmap = (NativeBitmap*) env->GetDirectBufferAddress(bitmem);
+
+	uint32_t* color_transform = new uint32_t[256];
+	uint32_t* histogram = createHistogram(nBitmap);
+	int old_min = get_lower_bound(histogram);
+	int old_max = get_upper_bound(histogram);
+
+	for(int i = 0; i < 256; i++){
+		color_transform[i] = NOT_SPECIFIED_COLOR;
+		if (old_min <= i && i <= old_max){
+			color_transform[i] = adjustIntensity(i,old_min,old_max,new_min,new_max);
+		}
+	}
+
+	return convertNativeToBitmap(env,transformNativeBitmap(nBitmap,color_transform));
+}
+
+
+

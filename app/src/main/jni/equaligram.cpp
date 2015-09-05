@@ -257,6 +257,25 @@ uint32_t* cumulative_equalization(uint32_t* histogram) {
 //////////////////////// END ALGORITMA 1 //////////////////////////////////////
 
 
+/////////////////////// ALGORITMA 2 /////////////////////////////////////////////
+
+
+uint32_t* simple_equalization(uint32_t* histogram) {
+	uint32_t* transform = new uint32_t[256];
+	int min_histo = get_lower_bound(histogram);
+	int max_histo = get_upper_bound(histogram);
+
+	float scaler = 255.0f / (max_histo - min_histo);
+
+	for (int i = 0; i < 256; i++)
+		transform[i] = (histogram[i] - min_histo) * scaler;
+
+	return transform;
+}
+
+
+////////////////////// END ALGORITMA 2 //////////////////////////////////////////
+
 /////////////////////////////////////////////////////////////////////////////////////
 // fungsi untuk load bitmap dan store ke native memory
 /////////////////////////////////////////////////////////////////////////////////////
@@ -382,6 +401,7 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo1 (J
 	NativeBitmap* nBitmap = (NativeBitmap*) env->GetDirectBufferAddress(bitmem);
 
 	uint32_t* histogram = createHistogram(nBitmap);
+	//uint32_t* color_transform = simple_equalization(histogram);
 	uint32_t* color_transform = cumulative_equalization(histogram);
 
 	delete[] histogram;
@@ -392,6 +412,7 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo1Bmp
 	NativeBitmap* nBitmap = (NativeBitmap*) env->GetDirectBufferAddress(bitmem);
 
 	uint32_t* histogram = createHistogram(nBitmap);
+	//uint32_t* color_transform = simple_equalization(histogram);
 	uint32_t* color_transform = cumulative_equalization(histogram);
 
 	delete[] histogram;

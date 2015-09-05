@@ -189,7 +189,8 @@ NativeBitmap* transformNativeBitmap(NativeBitmap* source, uint32_t* transform){
 
 		result->pixels[i] = convertArgbToInt(bitmapColor);
 	}
-
+	
+	delete[] transform;
 	return result;
 }
 
@@ -345,6 +346,10 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_genHistogram 
 			}
 		}
 	}
+	
+	delete[] hRed;
+	delete[] hBlue;
+	delete[] hGreen;
 	//return convertNativeToBitmap(env, grayscaleBitmap(nBitmap));
 	return convertNativeToBitmap(env, nCanvas);
 
@@ -379,6 +384,7 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo1 (J
 	uint32_t* histogram = createHistogram(nBitmap);
 	uint32_t* color_transform = cumulative_equalization(histogram);
 
+	delete[] histogram;
 	return env->NewDirectByteBuffer(transformNativeBitmap(nBitmap, color_transform), 0);
 }
 
@@ -388,5 +394,6 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo1Bmp
 	uint32_t* histogram = createHistogram(nBitmap);
 	uint32_t* color_transform = cumulative_equalization(histogram);
 
+	delete[] histogram;
 	return convertNativeToBitmap(env, transformNativeBitmap(nBitmap, color_transform));
 }

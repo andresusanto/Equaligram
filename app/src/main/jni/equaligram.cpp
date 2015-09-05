@@ -267,8 +267,8 @@ uint32_t* simple_equalization(uint32_t* histogram) {
 
 	float scaler = 255.0f / (max_histo - min_histo);
 
-	for (int i = 0; i < 256; i++)
-		transform[i] = (histogram[i] - min_histo) * scaler;
+	for (int i = min_histo; i < max_histo; i++)
+		transform[i] = (i - min_histo) * scaler;
 
 	return transform;
 }

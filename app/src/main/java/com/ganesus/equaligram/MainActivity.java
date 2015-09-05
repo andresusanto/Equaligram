@@ -1,5 +1,6 @@
 package com.ganesus.equaligram;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
@@ -28,7 +29,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        buffBitmap = loadBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.lena));
+        Intent intent = getIntent();
+
+        Bitmap bmp = BitmapFactory.decodeFile(intent.getStringExtra("PATH"));
+        if (bmp.getWidth() > 2000){
+            bmp = Bitmap.createScaledBitmap(bmp, bmp.getWidth()/2, bmp.getHeight()/2, false);
+        }
+
+        buffBitmap = loadBitmap(bmp);
+        //buffBitmap = loadBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.lena));
         buffBitmapGray = createGrayscale(buffBitmap);
         buffBitmap1 = applyAlgo1(buffBitmapGray);
 
@@ -45,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         ImageView ivAlgo1= (ImageView) findViewById(R.id.ivAlgo1);
 
 
-        ivAsli.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.lena));
+        ivAsli.setImageBitmap(bmp);
         hisAsli.setImageBitmap(genHistogram(buffBitmap, canvas, false));
         ivGray.setImageBitmap(createGrayscaleBmp(buffBitmap));
         ivAlgo1.setImageBitmap(applyAlgo1Bmp(buffBitmapGray));
@@ -55,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
         canvas = Bitmap.createBitmap(520, 320, conf);
         hisAlgo1.setImageBitmap(genHistogram(buffBitmap1, canvas, true));
+
     }
 
     public native ByteBuffer loadBitmap(Bitmap bitmap);

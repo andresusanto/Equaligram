@@ -69,6 +69,7 @@
 
 
             <TextView
+                android:id="@+id/txtAlgoName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
@@ -81,6 +82,7 @@
                 android:adjustViewBounds="true" />
 
             <TextView
+                android:id="@+id/txtAlgoHis"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
@@ -91,6 +93,52 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/hisAlgo1"
                 android:adjustViewBounds="true" />
+
+            <LinearLayout
+                android:id="@+id/layoutSliderMin"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="0"
+                    android:id="@+id/minTextView" />
+
+                <SeekBar
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/minSeekbar"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:max="255" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/layoutSliderMax"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="255"
+                    android:id="@+id/maxTextView" />
+
+                <SeekBar
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/maxSeekbar"
+                    android:progress="255"
+                    android:layout_alignTop="@+id/minPicker"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:max="255" />
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 

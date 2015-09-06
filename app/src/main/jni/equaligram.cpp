@@ -23,6 +23,10 @@ extern "C"
 	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_createGrayscaleBmp (JNIEnv * env, jobject obj, jobject bitmem);
 	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo1 (JNIEnv * env, jobject obj, jobject bitmem);
 	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo1Bmp (JNIEnv * env, jobject obj, jobject bitmem);
+	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo2 (JNIEnv * env, jobject obj, jobject bitmem);
+	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo2Bmp (JNIEnv * env, jobject obj, jobject bitmem);
+	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLinear (JNIEnv * env, jobject obj, jobject bitmem,int new_min,int new_max);
+	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLinearBmp (JNIEnv * env, jobject obj, jobject bitmem,int new_min,int new_max);
 }
 
 
@@ -194,6 +198,10 @@ NativeBitmap* transformNativeBitmap(NativeBitmap* source, uint32_t* transform){
 	return result;
 }
 
+
+int adjustIntensity(int i,int old_min,int old_max,int new_min,int new_max){
+	return (i - old_min)*(new_max - new_min)/(old_max - old_min) + new_min;
+}
 
 ///////////////////////////// ALGORITMA 1 ///////////////////////////////////
 
@@ -418,3 +426,70 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo1Bmp
 	delete[] histogram;
 	return convertNativeToBitmap(env, transformNativeBitmap(nBitmap, color_transform));
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
+// fungsi untuk menerapkan algoritma 2 ke native bitmap grayscale
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo2 (JNIEnv * env, jobject obj, jobject bitmem){
+	NativeBitmap* nBitmap = (NativeBitmap*) env->GetDirectBufferAddress(bitmem);
+
+	uint32_t* histogram = createHistogram(nBitmap);
+	uint32_t* color_transform = simple_equalization(histogram);
+
+	delete[] histogram;
+	return env->NewDirectByteBuffer(transformNativeBitmap(nBitmap, color_transform), 0);
+}
+
+JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo2Bmp (JNIEnv * env, jobject obj, jobject bitmem){
+	NativeBitmap* nBitmap = (NativeBitmap*) env->GetDirectBufferAddress(bitmem);
+
+	uint32_t* histogram = createHistogram(nBitmap);
+	uint32_t* color_transform = simple_equalization(histogram);
+
+	delete[] histogram;
+	return convertNativeToBitmap(env, transformNativeBitmap(nBitmap, color_transform));
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+// fungsi untuk menerapkan algoritma linear ke native bitmap grayscale
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLinear (JNIEnv * env, jobject obj, jobject bitmem,int new_min,int new_max){
+	NativeBitmap* nBitmap = (NativeBitmap*) env->GetDirectBufferAddress(bitmem);
+
+	uint32_t* color_transform = new uint32_t[256];
+	uint32_t* histogram = createHistogram(nBitmap);
+	int old_min = get_lower_bound(histogram);
+	int old_max = get_upper_bound(histogram);
+
+	for(int i = 0; i < 256; i++){
+		color_transform[i] = NOT_SPECIFIED_COLOR;
+		if (old_min <= i && i <= old_max){
+			color_transform[i] = adjustIntensity(i,old_min,old_max,new_min,new_max);
+		}
+	}
+	return env->NewDirectByteBuffer(transformNativeBitmap(nBitmap,color_transform),0);
+}
+
+JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLinearBmp (JNIEnv * env, jobject obj, jobject bitmem,int new_min,int new_max){
+	NativeBitmap* nBitmap = (NativeBitmap*) env->GetDirectBufferAddress(bitmem);
+
+	uint32_t* color_transform = new uint32_t[256];
+	uint32_t* histogram = createHistogram(nBitmap);
+	int old_min = get_lower_bound(histogram);
+	int old_max = get_upper_bound(histogram);
+
+	for(int i = 0; i < 256; i++){
+		color_transform[i] = NOT_SPECIFIED_COLOR;
+		if (old_min <= i && i <= old_max){
+			color_transform[i] = adjustIntensity(i,old_min,old_max,new_min,new_max);
+		}
+	}
+
+	return convertNativeToBitmap(env,transformNativeBitmap(nBitmap,color_transform));
+}
+

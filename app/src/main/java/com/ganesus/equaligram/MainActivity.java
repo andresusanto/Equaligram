@@ -10,6 +10,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.nio.ByteBuffer;
@@ -20,9 +22,10 @@ public class MainActivity extends AppCompatActivity {
     private ByteBuffer buffBitmapGray = null;
     private ByteBuffer buffBitmap1 = null;
 
-    public  void onClicker(View v){
+    private SeekBar minSeekbar, maxSeekbar;
+    private TextView minTextView, maxTextView;
+    private int min_rgb_value, max_rgb_value;
 
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,27 +40,113 @@ public class MainActivity extends AppCompatActivity {
         }
 
         buffBitmap = loadBitmap(bmp);
-        //buffBitmap = loadBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.lena));
         buffBitmapGray = createGrayscale(buffBitmap);
-        buffBitmap1 = applyAlgo1(buffBitmapGray);
 
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
         Bitmap canvas = Bitmap.createBitmap(780, 320, conf);
-
 
 
         ImageView ivAsli = (ImageView) findViewById(R.id.ivAsli);
         ImageView hisAsli = (ImageView) findViewById(R.id.hisAsli);
         ImageView hisGray = (ImageView) findViewById(R.id.hisGray);
         ImageView ivGray = (ImageView) findViewById(R.id.ivGray);
-        ImageView hisAlgo1 = (ImageView) findViewById(R.id.hisAlgo1);
-        ImageView ivAlgo1= (ImageView) findViewById(R.id.ivAlgo1);
+        final ImageView hisAlgo1 = (ImageView) findViewById(R.id.hisAlgo1);
+        final ImageView ivAlgo1= (ImageView) findViewById(R.id.ivAlgo1);
 
+        TextView tvAlgoName = (TextView) findViewById(R.id.txtAlgoName);
+        TextView tvAlgoHis = (TextView) findViewById(R.id.txtAlgoHis);
+
+        LinearLayout layoutMax = (LinearLayout) findViewById(R.id.layoutSliderMax);
+        LinearLayout layoutMin = (LinearLayout) findViewById(R.id.layoutSliderMin);
+
+
+        switch (intent.getIntExtra("FUNCTION", R.id.rCummulative)){
+            case R.id.rCummulative:
+                buffBitmap1 = applyAlgo1(buffBitmapGray);
+                ivAlgo1.setImageBitmap(applyAlgo1Bmp(buffBitmapGray));
+                tvAlgoName.setText("Hasil Algoritma Kumulatif");
+                tvAlgoHis.setText("Histogram Algoritma Kumulatif");
+                layoutMax.setVisibility(View.GONE);
+                layoutMin.setVisibility(View.GONE);
+                break;
+            case R.id.rSimple:
+                buffBitmap1 = applyAlgo2(buffBitmapGray);
+                ivAlgo1.setImageBitmap(applyAlgo2Bmp(buffBitmapGray));
+                tvAlgoName.setText("Hasil Algoritma Simpel");
+                tvAlgoHis.setText("Histogram Algoritma Simpel");
+                layoutMax.setVisibility(View.GONE);
+                layoutMin.setVisibility(View.GONE);
+                break;
+            case R.id.rLine:
+                this.minSeekbar = (SeekBar) findViewById(R.id.minSeekbar);
+                this.maxSeekbar = (SeekBar) findViewById(R.id.maxSeekbar);
+
+                this.minTextView = (TextView) findViewById(R.id.minTextView);
+                this.maxTextView = (TextView) findViewById(R.id.maxTextView);
+
+                min_rgb_value = Integer.parseInt(minTextView.getText().toString()); minTextView.setText(String.valueOf(min_rgb_value));
+                max_rgb_value = Integer.parseInt(maxTextView.getText().toString()); maxTextView.setText(String.valueOf(max_rgb_value));
+
+                tvAlgoName.setText("Hasil Algoritma Linear");
+                tvAlgoHis.setText("Histogram Algoritma Linear");
+
+                buffBitmap1 = applyAlgoLinear(buffBitmapGray,min_rgb_value,max_rgb_value);
+                ivAlgo1.setImageBitmap(applyAlgoLinearBmp(buffBitmapGray, min_rgb_value, max_rgb_value));
+
+                this.minSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
+                        minTextView.setText(String.valueOf(progress));
+                        min_rgb_value = progress;
+
+                        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+                        Bitmap canvas = Bitmap.createBitmap(520, 320, conf);
+
+                        buffBitmap1 = applyAlgoLinear(buffBitmapGray,min_rgb_value,max_rgb_value);
+                        ivAlgo1.setImageBitmap(applyAlgoLinearBmp(buffBitmapGray,min_rgb_value,max_rgb_value));
+                        hisAlgo1.setImageBitmap(genHistogram(buffBitmap1, canvas, true));
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                    }
+                });
+
+                this.maxSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
+                        maxTextView.setText(String.valueOf(progress));
+                        max_rgb_value = progress;
+
+                        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+                        Bitmap canvas = Bitmap.createBitmap(520, 320, conf);
+
+                        buffBitmap1 = applyAlgoLinear(buffBitmapGray,min_rgb_value,max_rgb_value);
+                        ivAlgo1.setImageBitmap(applyAlgoLinearBmp(buffBitmapGray,min_rgb_value,max_rgb_value));
+                        hisAlgo1.setImageBitmap(genHistogram(buffBitmap1, canvas, true));
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                    }
+                });
+                break;
+
+            case R.id.rStep:
+                break;
+        }
 
         ivAsli.setImageBitmap(bmp);
         hisAsli.setImageBitmap(genHistogram(buffBitmap, canvas, false));
         ivGray.setImageBitmap(createGrayscaleBmp(buffBitmap));
-        ivAlgo1.setImageBitmap(applyAlgo1Bmp(buffBitmapGray));
 
         canvas = Bitmap.createBitmap(520, 320, conf);
         hisGray.setImageBitmap(genHistogram(buffBitmapGray, canvas, true));
@@ -70,10 +159,14 @@ public class MainActivity extends AppCompatActivity {
     public native ByteBuffer loadBitmap(Bitmap bitmap);
     public native ByteBuffer createGrayscale(ByteBuffer bitmem);
     public native ByteBuffer applyAlgo1(ByteBuffer bitmem);
+    public native ByteBuffer applyAlgo2(ByteBuffer bitmem);
+    public native ByteBuffer applyAlgoLinear(ByteBuffer bitmem,int new_min,int new_max);
 
     public native Bitmap genHistogram(ByteBuffer bitmem, Bitmap canvas, boolean isGrayScale);
     public native Bitmap createGrayscaleBmp(ByteBuffer bitmem);
     public native Bitmap applyAlgo1Bmp(ByteBuffer bitmem);
+    public native Bitmap applyAlgo2Bmp(ByteBuffer bitmem);
+    public native Bitmap applyAlgoLinearBmp(ByteBuffer bitmem,int new_min,int new_max);
 
     static {
         System.loadLibrary("equaligram");

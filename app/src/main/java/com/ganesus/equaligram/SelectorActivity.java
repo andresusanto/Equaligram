@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RadioGroup;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,12 +25,17 @@ public class SelectorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setIcon(R.drawable.logo);
         setContentView(R.layout.activity_selector);
     }
 
     private void prosesBitmap(String path){
+        RadioGroup rg = (RadioGroup) findViewById(R.id.rGroup);
         Intent prosesIntent = new Intent(this, MainActivity.class);
+
         prosesIntent.putExtra("PATH", path);
+        prosesIntent.putExtra("FUNCTION", rg.getCheckedRadioButtonId());
         startActivity(prosesIntent);
     }
 

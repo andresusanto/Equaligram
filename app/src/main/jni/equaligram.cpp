@@ -8,6 +8,7 @@
 #include <android/bitmap.h>
 #include <cstring>
 #include <unistd.h>
+#include <cmath>
 
 #define  LOG_TAG    "EQUALIZER INSTAGRAM"
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
@@ -27,6 +28,8 @@ extern "C"
 	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgo2Bmp (JNIEnv * env, jobject obj, jobject bitmem);
 	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLinear (JNIEnv * env, jobject obj, jobject bitmem,int new_min,int new_max);
 	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLinearBmp (JNIEnv * env, jobject obj, jobject bitmem,int new_min,int new_max);
+	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoStep (JNIEnv * env, jobject obj, jobject bitmem, int L);
+	JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoStepBmp (JNIEnv * env, jobject obj, jobject bitmem, int L);
 }
 
 
@@ -284,6 +287,26 @@ uint32_t* simple_equalization(uint32_t* histogram) {
 
 ////////////////////// END ALGORITMA 2 //////////////////////////////////////////
 
+/////////////////////// ALGORITMA STEP /////////////////////////////////////
+
+uint32_t* equalize_step(uint32_t *in, uint32_t L){
+	uint32_t* mapping = new uint32_t[256];
+	float probability[256];
+	uint32_t sum=0;
+	for(int i=0;i<256;i++) sum+=in[i]; //total pixel freq
+	for(int i=0;i<256;i++){
+		probability[i]=(float)in[i]/sum;
+		if(i>0) probability[i]+=probability[i-1]; //cdf function
+		probability[i]=roundf(probability[i] * 1000) / 1000;
+	}
+	for(int i=0;i<256;i++){
+		mapping[i]=(uint32_t)(L-1)*probability[i];
+	}
+	return mapping;
+}
+
+////////////////////////////// END STEP /////////////////////////////////////
+
 /////////////////////////////////////////////////////////////////////////////////////
 // fungsi untuk load bitmap dan store ke native memory
 /////////////////////////////////////////////////////////////////////////////////////
@@ -493,3 +516,27 @@ JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoLine
 	return convertNativeToBitmap(env,transformNativeBitmap(nBitmap,color_transform));
 }
 
+/////////////////////////////////////////////////////////////////////////////////////
+// fungsi untuk menerapkan algoritma step ke native bitmap grayscale
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoStep (JNIEnv * env, jobject obj, jobject bitmem, int L){
+	NativeBitmap* nBitmap = (NativeBitmap*) env->GetDirectBufferAddress(bitmem);
+
+	uint32_t* histogram = createHistogram(nBitmap);
+	uint32_t* color_transform = equalize_step(histogram, L);
+
+	delete[] histogram;
+	return env->NewDirectByteBuffer(transformNativeBitmap(nBitmap, color_transform), 0);
+}
+
+JNIEXPORT jobject JNICALL Java_com_ganesus_equaligram_MainActivity_applyAlgoStepBmp (JNIEnv * env, jobject obj, jobject bitmem, int L){
+	NativeBitmap* nBitmap = (NativeBitmap*) env->GetDirectBufferAddress(bitmem);
+
+	uint32_t* histogram = createHistogram(nBitmap);
+	uint32_t* color_transform = equalize_step(histogram, L);
+
+	delete[] histogram;
+	return convertNativeToBitmap(env,transformNativeBitmap(nBitmap,color_transform));
+}

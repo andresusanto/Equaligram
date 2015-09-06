@@ -141,6 +141,39 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.rStep:
+                buffBitmap1 = applyAlgoStep(buffBitmapGray, 0);
+                ivAlgo1.setImageBitmap(applyAlgoStepBmp(buffBitmapGray, 0));
+                tvAlgoName.setText("Hasil Algoritma Step");
+                tvAlgoHis.setText("Histogram Algoritma Step");
+                layoutMax.setVisibility(View.GONE);
+
+                this.minSeekbar = (SeekBar) findViewById(R.id.minSeekbar);
+                this.minTextView = (TextView) findViewById(R.id.minTextView);
+
+                min_rgb_value = Integer.parseInt(minTextView.getText().toString()); minTextView.setText(String.valueOf(min_rgb_value));
+
+                this.minSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
+                        minTextView.setText(String.valueOf(progress));
+                        min_rgb_value = progress;
+
+                        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+                        Bitmap canvas = Bitmap.createBitmap(520, 320, conf);
+
+                        buffBitmap1 = applyAlgoStep(buffBitmapGray, min_rgb_value);
+                        ivAlgo1.setImageBitmap(applyAlgoStepBmp(buffBitmapGray, min_rgb_value));
+                        hisAlgo1.setImageBitmap(genHistogram(buffBitmap1, canvas, true));
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                    }
+                });
                 break;
         }
 
@@ -161,12 +194,14 @@ public class MainActivity extends AppCompatActivity {
     public native ByteBuffer applyAlgo1(ByteBuffer bitmem);
     public native ByteBuffer applyAlgo2(ByteBuffer bitmem);
     public native ByteBuffer applyAlgoLinear(ByteBuffer bitmem,int new_min,int new_max);
+    public native ByteBuffer applyAlgoStep(ByteBuffer bitmem,int L);
 
     public native Bitmap genHistogram(ByteBuffer bitmem, Bitmap canvas, boolean isGrayScale);
     public native Bitmap createGrayscaleBmp(ByteBuffer bitmem);
     public native Bitmap applyAlgo1Bmp(ByteBuffer bitmem);
     public native Bitmap applyAlgo2Bmp(ByteBuffer bitmem);
     public native Bitmap applyAlgoLinearBmp(ByteBuffer bitmem,int new_min,int new_max);
+    public native Bitmap applyAlgoStepBmp(ByteBuffer bitmem,int L);
 
     static {
         System.loadLibrary("equaligram");

@@ -27,7 +27,7 @@ Pre-processed image and its histogram:
 
 Post-processed image and its histogram, there are also some parameter sliders to find optimum value:
 
-![Post-processed image](/../screenshoot/screenshoots/intro.jpg?raw=true "Post-processed image")
+![Post-processed image](/../screenshoot/screenshoots/proses.jpg?raw=true "Post-processed image")
 
 ## License
 MIT License
